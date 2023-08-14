@@ -2,9 +2,7 @@ package com.aplugin.android
 
 import android.content.Context
 import android.os.Bundle
-import com.aplugin.android.annotation.InitTime
-import com.aplugin.android.annotation.PluginDepository
-import com.aplugin.android.annotation.PluginManager
+import com.aplugin.android.annotation.*
 import com.aplugin.android.util.Cache
 
 class APlugin(private val context: Context) {
@@ -58,6 +56,20 @@ class APlugin(private val context: Context) {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+    }
+
+    fun registerPlugin(clazz: Class<*>) {
+        clazz.getAnnotation(Plugin::class.java)?.let { annotation ->
+            val builder = PluginInfo.Builder()
+                .setClass(clazz)
+                .setInitTime(annotation.initTime.name)
+            clazz.methods.forEach { method ->
+                method.getAnnotation(Method::class.java)?.let { mm ->
+                    builder.addMethodInfo(method.name, mm.paramsKeys.asList())
+                }
+            }
+            pluginManager.registerPluginInfo(annotation.name, builder)
         }
     }
 
